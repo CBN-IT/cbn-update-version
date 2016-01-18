@@ -1,0 +1,172 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-dialog/paper-dialog.html">
+<link rel="import" href="../paper-styles/color.html">
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
+
+<!--
+`cbn-update-version` 
+
+    <cbn-update-version></cbn-update-version>
+
+### Validation
+
+### Styling
+
+@demo demo/index.html
+@class cbn-update-version
+-->
+
+<dom-module id="cbn-update-version">
+	<style>
+		#dialog {
+			border-radius: 10px;
+			overflow: hidden;
+		}
+		#dialog .header{
+			margin-top: 0;
+			background-color: #f7f7f7;
+			border-bottom: 1px solid #ebebeb;
+			font-size: 16px;
+			font-weight: bold;
+			padding: 10px 24px 10px 20px;
+		}
+		#dialog .header iron-icon{
+			color: var(--paper-red-400);
+			margin-right: 7px;
+		}
+		#dialog paper-button {
+			padding: 0.3em 0.57em;
+		}
+
+		#dialog .content {
+			font-size: 17px;
+			font-weight:bold;
+		}
+
+		#dialog .modal-buttons{
+			display: flex;
+			justify-content: space-around;
+			font-weight: bold;
+		}
+
+		#dialog paper-button.red:hover {
+			background-color: var(--paper-red-100);
+		}
+
+		#dialog paper-button.green:hover {
+			background-color: var(--paper-green-100);
+		}
+
+		#dialog paper-button.grey:hover {
+			background-color: var(--paper-grey-100);
+		}
+
+		#dialog paper-button.red {
+			background-color: white;
+			color: var(--google-red-500);
+		}
+
+		#dialog paper-button.green {
+			background-color: white;
+			color: var(--google-green-500);
+		}
+
+		#dialog paper-button.grey {
+			color: initial;
+		}
+		paper-button[hidden]{
+			display: none !important;
+		}
+	</style>
+	<template>
+		<paper-dialog modal="true" id="dialog">
+			<div class="header"><iron-icon icon="icons:warning"></iron-icon>Aplicatia a fost modificata</div>
+			<div class="content">
+				A aparut o noua versiune acum {{timeSinceUpload}}.<br />
+				Doresti sa dai refresh la aplicatie?
+			</div>
+			<div class="modal-buttons">
+				<paper-button class="grey" hidden$="[[!hasCancel]]" on-tap="_cancelChanges">Cancel</paper-button>
+				<paper-button class="green" hidden$="[[!hasSave]]" on-tap="_saveChanges">Refresh</paper-button>
+			</div>
+		</paper-dialog>
+	</template>
+</dom-module>
+
+<script>
+	(function () {
+		Polymer({
+
+			is: 'cbn-update-version',
+			behaviors: [],
+			properties: {
+				timeSinceUpload: {
+					type: Number
+				},
+				appVersion: {
+					type: String,
+					value: undefined
+				},
+				_boundHandleAppV:{
+					type: Function,
+					value:function(){
+						return this._handleAppV.bind(this);
+					}
+				}
+			},
+			listeners: {},
+			attached : function () {
+				document.addEventListener("response", this._boundHandleAppV, true);
+				document.addEventListener("error", this._boundHandleAppV, true);
+			},
+			detached: function () {
+				document.removeEventListener("response", this._boundHandleAppV, true);
+				document.removeEventListener("error", this._boundHandleAppV, true);
+			},
+			_handleAppV: function (event) {
+				var serverVersion = event.detail.xhr.getResponseHeader("appV");
+				if (serverVersion == undefined) {
+					return;
+				}
+				if (this.appVersion == undefined) {
+					this.appVersion = serverVersion;
+					return;
+				}
+				if (this.appVersion != serverVersion) {
+					this.appVersion = serverVersion;
+					var uploadDate = new Date(parseInt(serverVersion.substring(serverVersion.indexOf(".") + 1), 10) / (2 << 27) * 1000);
+					var diffTime = new Date().getTime() - uploadDate.getTime();
+					this.timeSinceUpload = this._formatTimeDifference(diffTime);
+					this.$.dialog.open();
+				}
+			},
+			_formatTimeDifference: function (timeDif) {
+				if (timeDif < 1000)
+					return "0s";
+
+				var days = parseInt(timeDif / (24 * 60 * 60 * 1000));
+				timeDif = timeDif % (24 * 60 * 60 * 1000);
+				var h = parseInt(timeDif / (60 * 60 * 1000));
+				timeDif = timeDif % (60 * 60 * 1000);
+				var min = parseInt(timeDif / (60 * 1000));
+				timeDif = timeDif % (60 * 1000);
+				var sec = parseInt(timeDif / 1000);
+
+				var str = "";
+				str += ((days == 0) ? "" : (days == 1) ? "1 zi" : (days + " zile"));
+				str += ((h == 0) ? "" : (((str == "") ? "" : ", ") + h + " h"));
+				str += ((min == 0) ? "" : (((str == "") ? "" : ", ") + min + " min"));
+				str += ((sec == 0) ? "" : (((str == "") ? "" : ", ") + sec + " s"));
+				return str;
+			},
+			_saveChanges: function(){
+				window.location.reload();
+			},
+			_cancelChanges: function(){
+				this.$.dialog.close();
+			}
+		})
+	})();
+</script>
