@@ -126,16 +126,13 @@
 				document.removeEventListener("error", this._boundHandleAppV, true);
 			},
 			_handleAppV: function (event) {
-				var serverVersion;
-				var oldConsoleError = console.error;
-				console.error=function(){};
-				try {
-					serverVersion = event.detail.xhr.getResponseHeader("appV");
-				} catch (e) {
-					console.log( e.message );
-					//this happens when you are requesting a different url than the default app
-				}
-				console.error=oldConsoleError;
+				var serverVersion = undefined;
+				event.detail.xhr.getAllResponseHeaders().split(/[\r\n]+/).forEach(function (val) {
+					if (val.indexOf("appV:") == 0) {
+						serverVersion = val.substring(5).trim();
+					}
+				});
+					
 				if (serverVersion == undefined) {
 					return;
 				}
