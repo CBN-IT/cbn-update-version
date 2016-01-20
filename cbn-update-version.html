@@ -130,6 +130,7 @@
 				try {
 					serverVersion = event.detail.xhr.getResponseHeader("appV");
 				} catch (e) {
+					console.log( e.message );
 					//this happens when you are requesting a different url than the default app
 				}
 				if (serverVersion == undefined) {
