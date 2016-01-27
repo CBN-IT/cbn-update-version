@@ -128,7 +128,7 @@
 			_handleAppV: function (event) {
 				var serverVersion = undefined;
 				event.detail.xhr.getAllResponseHeaders().split(/[\r\n]+/).forEach(function (val) {
-					if (val.indexOf("appV:") == 0) {
+					if (val.toLowerCase().indexOf("appv:") == 0) {
 						serverVersion = val.substring(5).trim();
 					}
 				});
