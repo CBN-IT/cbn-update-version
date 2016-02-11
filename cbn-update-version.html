@@ -127,7 +127,16 @@
 			},
 			_handleAppV: function (event) {
 				var serverVersion = undefined;
-				event.detail.xhr.getAllResponseHeaders().split(/[\r\n]+/).forEach(function (val) {
+				var xhr = undefined;
+				if (event.detail.xhr != undefined) {
+					xhr = event.detail.xhr;
+				} else if (event.detail.request != undefined && event.detail.request.xhr != undefined) {
+					xhr = event.detail.request.xhr;
+				}
+				if (xhr == undefined) {
+					return;
+				}
+				xhr.getAllResponseHeaders().split(/[\r\n]+/).forEach(function (val) {
 					if (val.toLowerCase().indexOf("appv:") == 0) {
 						serverVersion = val.substring(5).trim();
 					}
