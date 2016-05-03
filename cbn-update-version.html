@@ -128,7 +128,7 @@
 			_handleAppV: function (event) {
 				var serverVersion = undefined;
 				var xhr = undefined;
-				if (event.detail.xhr != undefined) {
+				if (event.detail!= undefined && event.detail.xhr != undefined) {
 					xhr = event.detail.xhr;
 				} else if (event.detail.request != undefined && event.detail.request.xhr != undefined) {
 					xhr = event.detail.request.xhr;
